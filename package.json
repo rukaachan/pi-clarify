@@ -1,0 +1,42 @@
+{
+  "name": "@rukaachan/pi-clarify",
+  "version": "1.1.0",
+  "description": "Clarify editor draft via Alt+G shortcut and /clarify model picker.",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/rukaachan/pi-clarify" },
+  "homepage": "https://github.com/rukaachan/pi-clarify#readme",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": ["extensions/", "src/", "README.md", "LICENSE"],
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-ai": {
+      "optional": true
+    },
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@earendil-works/pi-tui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "0.84.4",
+    "@earendil-works/pi-coding-agent": "0.84.4",
+    "@earendil-works/pi-tui": "0.84.4",
+    "@types/node": "22.19.19",
+    "typescript": "5.9.3"
+  },
+  "pi": { "extensions": ["./extensions"] }
+}
