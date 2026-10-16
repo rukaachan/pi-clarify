@@ -1,6 +1,8 @@
 const DEFAULT_DURATION_MS = 150;
-const DEFAULT_FRAME_MS = 30;
+const DEFAULT_FRAME_MS = 60;
 const MAX_DURATION_MS = 600;
+const LONG_TEXT_CHARS = 500;
+const LONG_TEXT_FRAME_MS = 120;
 const DEFAULT_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const LETTER_OR_NUMBER = /[\p{L}\p{N}]/u;
 
@@ -131,7 +133,8 @@ export async function animateScramblePreview(
 	onFrame: (text: string) => void,
 	options: ScramblePreviewOptions,
 ): Promise<void> {
-	const frameMs = Math.max(1, options.frameMs ?? DEFAULT_FRAME_MS);
+	const defaultMs = text.length > LONG_TEXT_CHARS ? LONG_TEXT_FRAME_MS : DEFAULT_FRAME_MS;
+	const frameMs = Math.max(1, options.frameMs ?? defaultMs);
 	const rng = options.rng ?? Math.random;
 	const randomGlyphs = createRandomGlyphs(options.glyphs);
 	const target = splitGraphemes(text);

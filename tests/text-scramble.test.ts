@@ -126,3 +126,16 @@ test("aborting still emits the exact target as the final frame", async () => {
 
 	assert.equal(frames.at(-1), "after");
 });
+
+test("preview throttles frames for long drafts", async () => {
+	const controller = new AbortController();
+	const frames: string[] = [];
+	setTimeout(() => controller.abort(), 200);
+	await animateScramblePreview(
+		"x".repeat(2000),
+		(text) => frames.push(text),
+		{ signal: controller.signal },
+	);
+	// default 30ms would give ~6 frames in 200ms; throttled must give <=3
+	assert.ok(frames.length <= 3, `got ${frames.length} frames, must throttle`);
+});
