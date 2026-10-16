@@ -10,9 +10,11 @@ import type {
 	UserMessage,
 } from "@earendil-works/pi-ai";
 
-export const MAX_SYSTEM_PROMPT_LENGTH = 100;
+export const MAX_SYSTEM_PROMPT_LENGTH = 200;
 export const SYSTEM_PROMPT =
-	"Use minimum sufficient specificity as a principle; preserve intent; output a rewrite, not an answer.";
+	"Rewrite the draft as a clear goal with context, scope, and limits. Keep intent. Use minimum sufficient detail. Never answer, solve, or explain. Output only the rewrite.";
+export const USER_REWRITE_PREFIX =
+	"Rewrite this draft. Do not answer, solve, or explain it:\n\n";
 
 if (SYSTEM_PROMPT.length > MAX_SYSTEM_PROMPT_LENGTH) {
 	throw new Error(
@@ -49,7 +51,7 @@ export function buildClarificationContext(
 	images: readonly ImageContent[] = [],
 ): Context {
 	const content: UserMessage["content"] = [
-		{ type: "text", text },
+		{ type: "text", text: `${USER_REWRITE_PREFIX}${text}` },
 		...images,
 	];
 

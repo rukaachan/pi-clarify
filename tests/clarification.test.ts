@@ -18,7 +18,7 @@ function response(text: string): ClarificationResponse {
 	};
 }
 
-test("clarification sends only the draft and fixed instructions", async () => {
+test("clarification sends rewrite order and draft with fixed instructions", async () => {
 	let receivedContext: ReturnType<typeof buildClarificationContext> | undefined;
 	let receivedOptions: Record<string, unknown> | undefined;
 	const signal = new AbortController().signal;
@@ -40,7 +40,7 @@ test("clarification sends only the draft and fixed instructions", async () => {
 	assert.equal(result, "Optimize src/parser.ts while preserving the public API.");
 	assert.equal(
 		SYSTEM_PROMPT,
-		"Use minimum sufficient specificity as a principle; preserve intent; output a rewrite, not an answer.",
+		"Rewrite the draft as a clear goal with context, scope, and limits. Keep intent. Use minimum sufficient detail. Never answer, solve, or explain. Output only the rewrite.",
 	);
 	assert.ok(SYSTEM_PROMPT.length <= MAX_SYSTEM_PROMPT_LENGTH);
 	assert.equal(receivedContext?.systemPrompt, SYSTEM_PROMPT);
@@ -50,7 +50,7 @@ test("clarification sends only the draft and fixed instructions", async () => {
 		content: [
 			{
 				type: "text",
-				text: "speed up src/parser.ts without changing the public API",
+				text: "Rewrite this draft. Do not answer, solve, or explain it:\n\nspeed up src/parser.ts without changing the public API",
 			},
 		],
 		timestamp: receivedContext?.messages[0].timestamp,
@@ -58,6 +58,20 @@ test("clarification sends only the draft and fixed instructions", async () => {
 	assert.equal(receivedOptions?.apiKey, "test-key");
 	assert.equal(receivedOptions?.cacheRetention, "none");
 	assert.equal(receivedOptions?.signal, signal);
+});
+
+test("clarification orders rewrite and never answer", () => {
+	const ctx = buildClarificationContext("how do I fix X?", []);
+	assert.equal(
+		SYSTEM_PROMPT,
+		"Rewrite the draft as a clear goal with context, scope, and limits. Keep intent. Use minimum sufficient detail. Never answer, solve, or explain. Output only the rewrite.",
+	);
+	assert.deepEqual(ctx.messages[0].content, [
+		{
+			type: "text",
+			text: "Rewrite this draft. Do not answer, solve, or explain it:\n\nhow do I fix X?",
+		},
+	]);
 });
 
 test("clarification preserves image inputs for the isolated request", async () => {
@@ -79,7 +93,7 @@ test("clarification preserves image inputs for the isolated request", async () =
 	);
 
 	assert.deepEqual(receivedContent, [
-		{ type: "text", text: "describe this screenshot" },
+		{ type: "text", text: "Rewrite this draft. Do not answer, solve, or explain it:\n\ndescribe this screenshot" },
 		image,
 	]);
 });
