@@ -87,7 +87,8 @@ export async function clarify(
 	}
 
 	const auth = await dependencies.resolveAuth(model);
-	const response = await dependencies.complete(
+	if (signal?.aborted) return null;
+	const responsePromise = dependencies.complete(
 		model,
 		buildClarificationContext(text, images),
 		{
@@ -99,6 +100,29 @@ export async function clarify(
 			...(thinkingLevel ? { reasoning: thinkingLevel } : {}),
 		},
 	);
+	const response = signal
+		? await new Promise<ClarificationResponse | null>((resolve, reject) => {
+				const onAbort = (): void => {
+					signal.removeEventListener("abort", onAbort);
+					resolve(null);
+				};
+				signal.addEventListener("abort", onAbort, { once: true });
+				responsePromise.then(
+					(value) => {
+						signal.removeEventListener("abort", onAbort);
+						resolve(value);
+					},
+					(error) => {
+						signal.removeEventListener("abort", onAbort);
+						reject(error);
+					},
+				);
+			})
+		: await responsePromise;
+
+	if (response === null) {
+		return null;
+	}
 
 	if (response.stopReason === "aborted") {
 		return null;

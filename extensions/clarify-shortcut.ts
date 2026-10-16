@@ -3,7 +3,7 @@ import type { ImageContent, ModelThinkingLevel } from "@earendil-works/pi-ai";
 import { Key } from "@earendil-works/pi-tui";
 import { clarify, createClarifyDependencies, type RewriteModel } from "../src/clarification.ts";
 import { resolveClarifyModel } from "../src/clarify-state.ts";
-import { isBypassInput } from "../src/input-state.ts";
+import { isBypassInput, isCancelInput } from "../src/input-state.ts";
 import { animateScramble, animateScramblePreview } from "../src/text-scramble.ts";
 
 const CLARIFICATION_ERROR = "Clarification failed";
@@ -30,7 +30,7 @@ async function clarifyAndReveal(
 	const previewController = new AbortController();
 	let previewText = rawText;
 	const unsubscribe = ctx.ui.onTerminalInput((data) => {
-		if (data === "\x1b" || data === "\x03") {
+		if (isCancelInput(data)) {
 			controller.abort();
 			previewController.abort();
 			return { consume: true };
@@ -94,7 +94,7 @@ export default function registerClarifyShortcut(pi: ExtensionAPI): void {
 
 			// Keep original to restore on cancel/error
 			const original = rawText;
-			setEditorText(ctx, rawText);
+			ctx.ui.setWorkingVisible(false);
 			busy = true;
 			try {
 				const result = await clarifyAndReveal(rawText, resolved.model, ctx, [], resolved.thinkingLevel);

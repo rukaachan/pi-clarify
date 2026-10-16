@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isBypassInput, type InputSnapshot } from "../src/input-state.ts";
+import { isBypassInput, isCancelInput, type InputSnapshot } from "../src/input-state.ts";
 
 const normalInput: InputSnapshot = {
 	text: "make the parser faster",
@@ -42,4 +42,16 @@ test("non-TUI modes bypass clarification", () => {
 
 test("normal tui input does not bypass", () => {
 	assert.equal(isBypassInput(normalInput), false);
+});
+
+test("cancel keys catch Esc and Ctrl+C in all forms", () => {
+	for (const data of ["\x1b", "\x03", "\x1b[99;5u"]) {
+		assert.equal(isCancelInput(data), true, JSON.stringify(data));
+	}
+});
+
+test("normal keys do not cancel", () => {
+	for (const data of ["a", "\r", "\x1b[A", "\x1b[65;5u"]) {
+		assert.equal(isCancelInput(data), false, JSON.stringify(data));
+	}
 });

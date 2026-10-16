@@ -98,6 +98,31 @@ test("clarification preserves image inputs for the isolated request", async () =
 	]);
 });
 
+test("clarify returns fast after abort even if provider ignores signal", async () => {
+	const controller = new AbortController();
+	const start = Date.now();
+	const resultPromise = clarify(
+		"clarify this slow request",
+		model,
+		{
+			resolveAuth: async () => ({}),
+			complete: async () => {
+				await new Promise((r) => {
+					const timer = setTimeout(r, 5000);
+					timer.unref?.();
+				});
+				return response("too late");
+			},
+		},
+		controller.signal,
+	);
+	setTimeout(() => controller.abort(), 20);
+	const result = await resultPromise;
+	const elapsed = Date.now() - start;
+	assert.equal(result, null);
+	assert.ok(elapsed < 1000, `abort took ${elapsed}ms, must be fast`);
+});
+
 test("an aborted provider request never produces a submission draft", async () => {
 	const result = await clarify(
 		"clarify this request",
